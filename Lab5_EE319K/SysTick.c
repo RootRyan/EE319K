@@ -1,7 +1,7 @@
 // SysTick.c
 // Runs on TM4C123
 // Provide functions that initialize the SysTick module
-// Put your name here
+// Ryan Root and Abhishek Sridhar
 
 // October 5, 2018
 
