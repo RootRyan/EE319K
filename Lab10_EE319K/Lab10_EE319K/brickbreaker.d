@@ -1,0 +1,11 @@
+.\brickbreaker.o: BrickBreaker.c
+.\brickbreaker.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\brickbreaker.o: ../inc/tm4c123gh6pm.h
+.\brickbreaker.o: ST7735.h
+.\brickbreaker.o: Random.h
+.\brickbreaker.o: PLL.h
+.\brickbreaker.o: ADC.h
+.\brickbreaker.o: Images.h
+.\brickbreaker.o: Sound.h
+.\brickbreaker.o: Timer0.h
+.\brickbreaker.o: Timer1.h
