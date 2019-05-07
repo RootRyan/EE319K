@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\</OutputDirectory>
-          <OutputName>SpaceInvaders</OutputName>
+          <OutputName>BrickBreaker</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>0</CreateHexFile>
@@ -428,9 +428,9 @@
               <FilePath>.\Print.s</FilePath>
             </File>
             <File>
-              <FileName>SpaceInvaders.c</FileName>
+              <FileName>BrickBreaker.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\SpaceInvaders.c</FilePath>
+              <FilePath>.\BrickBreaker.c</FilePath>
             </File>
             <File>
               <FileName>ST7735.c</FileName>
