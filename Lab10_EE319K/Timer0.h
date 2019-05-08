@@ -29,6 +29,7 @@
 // Inputs:  task is a pointer to a user function
 //          period in units (1/clockfreq)
 // Outputs: none
-void Timer0_Init(char *pt, uint32_t period);
-void Timer0A_Handler(void);
+void Timer0_Init(void(*task)(void));
+//void Timer0_Init(uint8_t *pt, uint32_t period);
+
 #endif // __TIMER2INTS_H__

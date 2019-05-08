@@ -62,8 +62,6 @@
 
 void DisableInterrupts(void); // Disable interrupts
 void EnableInterrupts(void);  // Enable interrupts
-void Delay100ms(uint32_t count); // time delay in 0.1 seconds
-//void IntroScreen(void);
 
 typedef enum {dead, alive} blockStat;
 struct blockLoc{
@@ -124,6 +122,7 @@ void SysTick_Init(void){
 }
 
 void IntroScreen(void){
+	Sound_IntroMusic();
 	SysTick_Init();
 	ST7735_FillScreen(0x0000);            // set screen to black
 	ST7735_SetCursor(0,0);
@@ -144,7 +143,8 @@ void IntroScreen(void){
 	//while(1);
 }
 
-void gameInit(void){
+void gameInit(void){//Sets up game
+	
 	ST7735_FillScreen(0x0000);
 	
 	Lives = 3;
@@ -193,7 +193,8 @@ void gameInit(void){
 }
 
 void GameOver(void){
-	DisableInterrupts();
+	//Sound_Explosion();
+	//Sound_Lose();
 	Indicator = 0;
 	ST7735_FillScreen(0x0000);    
 	ST7735_SetCursor(0,0);
@@ -210,7 +211,7 @@ void GameOver(void){
 	ST7735_OutString("To Return To Menu");
 	GPIO_PORTE_IM_R ^= 0x03;      // Disable interrupt on PE0,PE1
 	while(1){
-		if((GPIO_PORTE_DATA_R == 0x02) || (GPIO_PORTE_DATA_R == 0x01)){
+		if((GPIO_PORTE_DATA_R == 0x02) || (GPIO_PORTE_DATA_R == 0x01)){//Gets back to main menu
 			ResetInd = 1;
 			break;
 		}
@@ -220,7 +221,7 @@ void GameOver(void){
 }
 
 void GameWon(void){
-	DisableInterrupts();
+	Sound_Win();
 	Indicator = 0;
 	ST7735_FillScreen(0x0000);    
 	ST7735_SetCursor(0,0);
@@ -237,7 +238,7 @@ void GameWon(void){
 	ST7735_OutString("To Return To Menu");
 	GPIO_PORTE_IM_R ^= 0x03;      // Disable interrupt on PE0,PE1
 	while(1){
-		if((GPIO_PORTE_DATA_R == 0x02) || (GPIO_PORTE_DATA_R == 0x01)){
+		if((GPIO_PORTE_DATA_R == 0x02) || (GPIO_PORTE_DATA_R == 0x01)){//Gets back to main menu
 			ResetInd = 1;
 			break;
 		}
@@ -246,7 +247,7 @@ void GameWon(void){
 	//IntroScreen();
 }
 
-void displayInfo(void){
+void displayInfo(void){//displays information during game
 	ST7735_SetCursor(0,0);
 	ST7735_OutString("Lives:             ");
 	ST7735_SetCursor(7,0);
@@ -258,13 +259,14 @@ void displayInfo(void){
 	LCD_OutDec(Score);
 }
 
-void paddleMove(void){
+void paddleMove(void){//SlidePot paddle movement system
 	ST7735_FillRect(PaddleX,PaddleY,PaddleWidth,5,0x0000);
 	PaddleX = ((ADC_In()*PaddleMax)/4095) + 1;
 	ST7735_FillRect(PaddleX,PaddleY,PaddleWidth,5,0xFFFF);
 }
 
-void resetBall(void){
+void resetBall(void){//Resets ball on paddle
+	//Sound_Explosion();
 	ST7735_FillRect(BallX,BallY,BallSize,BallSize,0x0000);
 	BallX = PaddleX + (PaddleWidth/2) + (BallSize/2);
 	BallYVel = -1;
@@ -273,16 +275,19 @@ void resetBall(void){
 }
 
 uint8_t checkCollision(void){
-	if(BallY == 159-BallSize){
+	if(BallY == 159-BallSize){//Reaches bottom
 		return 0;
 	}
-	if((BallX == 119-BallSize) || (BallX == 0)){
+	if((BallX == 119-BallSize) || (BallX == 0)){//Hits side
+		Sound_Bounce();
 		BallXVel *= -1;
 	}
-	if(BallY == 11){
+	if(BallY == 11){//Hits top barrier
+		Sound_Bounce();
 		BallYVel *= -1;
 	}
-	if ((BallY == PaddleY - BallSize) && ((BallX > PaddleX - BallSize) || (BallX == PaddleX)) && (BallX < PaddleX + PaddleWidth + BallSize)){
+	if ((BallY == PaddleY - BallSize) && ((BallX > PaddleX - BallSize) || (BallX == PaddleX)) && (BallX < PaddleX + PaddleWidth + BallSize)){//Hits Paddle
+		Sound_Bounce();
 		BallYVel *= -1;
 		/*BallYVel = ((int32_t)(Random32()%3)+1)*-1; 
 		if(BallXVel > 0){
@@ -293,14 +298,16 @@ uint8_t checkCollision(void){
 	}
 	for(uint8_t row = 0; row < 6; row++){
 		for(uint8_t col = 0; col < 5; col++){
-			if(((BallY == Block[row][col].y + BlockHeight) || (BallY == Block[row][col].y - BallSize))  && (BallX > Block[row][col].x) && (BallX < Block[row][col].x + BlockWidth) && (Block[row][col].stat == alive)){
+			if(((BallY == Block[row][col].y + BlockHeight) || (BallY == Block[row][col].y - BallSize))  && (BallX > Block[row][col].x) && (BallX < Block[row][col].x + BlockWidth) && (Block[row][col].stat == alive)){//Hits brick from above or below
+				Sound_Bounce();
 				Block[row][col].stat = dead;
 				BallYVel *= -1;
 				ST7735_FillRect(Block[row][col].x,Block[row][col].y,BlockWidth,BlockHeight,0x0000);
 				Score += Lives*10;
 				DeadCount++;
 			}
-			if(((BallX == Block[row][col].x - BallSize) || (BallX == Block[row][col].x + BlockWidth)) && (BallY >= Block[row][col].y) && (BallY <= Block[row][col].y + BlockHeight) && (Block[row][col].stat == alive)){
+			if(((BallX == Block[row][col].x - BallSize) || (BallX == Block[row][col].x + BlockWidth)) && (BallY >= Block[row][col].y) && (BallY <= Block[row][col].y + BlockHeight) && (Block[row][col].stat == alive)){//Hits brick from left or right side
+				Sound_Bounce();
 				Block[row][col].stat = dead;
 				BallXVel *= -1;
 				ST7735_FillRect(Block[row][col].x,Block[row][col].y,BlockWidth,BlockHeight,0x0000);
@@ -315,8 +322,8 @@ uint8_t checkCollision(void){
 void ballMove(void){
 	uint8_t status;
 	status = checkCollision();
-	if(status == 1){
-		if (DeadCount == 30){
+	if(status == 1){//Anything other than hitting bottom
+		if (DeadCount == 30){//Win condition
 		GameWon();
 		}
 		ST7735_FillRect(BallX,BallY,BallSize,BallSize,0x0000);
@@ -324,9 +331,10 @@ void ballMove(void){
 		BallY = BallY + BallYVel;
 		ST7735_FillRect(BallX,BallY,BallSize,BallSize,0xFFFF);
 	}
-	if(status == 0){
+	if(status == 0){//If hits bottom
+		Sound_Explosion();
 		Lives--;
-		if (Lives == 0){
+		if (Lives == 0){//Losing condition
 			GameOver();
 		} else {
 			resetBall();
@@ -334,7 +342,7 @@ void ballMove(void){
 	}
 }
 
-void SysTick_Handler(void){
+void SysTick_Handler(void){//Calls functions responsible for the game to work 
 	if(Indicator != 0){
 		uint32_t currentScore = Score, currentLives = Lives;
 		paddleMove();
@@ -346,11 +354,10 @@ void SysTick_Handler(void){
 }
 
 void GPIOPortE_Handler(void){
-	if(Indicator != 0){
-		if((GPIO_PORTE_RIS_R & 0x01) != 0){
+	if(Indicator != 0){//Actions if in the game
+		if((GPIO_PORTE_RIS_R & 0x01) != 0){//Pause game when PE0 pressed
 			GPIO_PORTE_ICR_R = 0x01;
-			//NVIC_ST_RELOAD_R ^= Speed; //alternates between no reload and regular reload
-			//OR
+			//Sound_PowerUp();
 			if((NVIC_ST_CTRL_R & 0x07) == 0x07){
 				ST7735_SetCursor(0,0);
 				ST7735_OutString("    Game Paused     ");
@@ -359,9 +366,11 @@ void GPIOPortE_Handler(void){
 			}
 			NVIC_ST_CTRL_R ^= 0x07; //activates/deactivates SysTick
 		}
-		if((GPIO_PORTE_RIS_R & 0x02) != 0){
+		if((GPIO_PORTE_RIS_R & 0x02) != 0){//Change paddle width if possible when PE1 pressed
 			GPIO_PORTE_ICR_R = 0x02;
 			if(DeadCount >= PaddleChangeInd){
+				Sound_Win();
+				//Sound_PowerUp();
 				ST7735_SetCursor(0,0);
 				ST7735_OutString("Paddle Size Changed ");
 				PaddleChangeInd += 5;
@@ -374,7 +383,8 @@ void GPIOPortE_Handler(void){
 				ST7735_OutString("No Powers Available ");
 			}
 		}
-	} else {
+	} else {//Actions if in a title screen (intro, win, lose)
+		Sound_Stop();
 		if((GPIO_PORTE_RIS_R & 0x02) != 0){
 			GPIO_PORTE_ICR_R = 0x02;
 		}
@@ -387,14 +397,16 @@ void GPIOPortE_Handler(void){
 }
 
 int main(void){
+	//Initialize Everything
 	PLL_Init(Bus80MHz);
 	Indicator = 0;
 	ResetInd = 0;
 	ADC_Init();
 	Output_Init();
+	Sound_Init();
   IntroScreen();
 	while(1){
-		if(ResetInd != 0){
+		if(ResetInd != 0){//Reinitializes everything after button press in the win/lose screen 
 			PLL_Init(Bus80MHz);
 			Indicator = 0;
 			ResetInd = 0;
@@ -405,24 +417,27 @@ int main(void){
 	}
 }
 
-int mainTest(void){
+int main2(void){
   PLL_Init(Bus80MHz);       // Bus clock is 80 MHz 
-  //Random_Init(1);
-
+	Indicator = 0;
+	ResetInd = 0;
 	ADC_Init();
-	//SysTick_Init();
-	//RisingEdge_PortEInit();
-
   Output_Init();
-  IntroScreen();
-	
-	
-	
+  Sound_Init();
 	//gameInit();
 	//SysTick_Init();
 	//RisingEdge_PortEInit();
-	
-  while(1){
-  }
+	IntroScreen();
+  while(1);
+}
 
+int main3(void){
+  PLL_Init(Bus80MHz);       // Bus clock is 80 MHz 
+  Indicator = 0;
+	ResetInd = 0;
+	ADC_Init();
+  Output_Init();
+	Sound_Init();
+	Sound_IntroMusic();
+  while(1);
 }

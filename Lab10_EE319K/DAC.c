@@ -19,7 +19,7 @@
 // this file also contains an private functions and private data
 
 // **************DAC_Init*********************
-// Initialize 4-bit DAC, called once 
+// Initialize 6-bit DAC, called once 
 // Input: none
 // Output: none
 void DAC_Init(void){
@@ -32,8 +32,8 @@ void DAC_Init(void){
 
 // **************DAC_Out*********************
 // output to DAC
-// Input: 4-bit data, 0 to 15 
-// Input=n is converted to n*3.3V/15
+// Input: 6-bit data, 0 to 63 
+// Input=n is converted to n*3.3V/63
 // Output: none
 void DAC_Out(uint32_t data){
 	GPIO_PORTB_DATA_R = data;

@@ -7,16 +7,14 @@
 
 
 void Sound_Init(void);
-void Sound_Play(char *pt, uint32_t count);
+void Sound_Play(const unsigned char *pt, uint32_t count);
+
+void Timer0_Handler(void);
+
+void Sound_Stop(void);
 void Sound_IntroMusic(void);
 void Sound_Bounce(void);
-void Sound_Shoot(void);
-void Sound_Killed(void);
+void Sound_Win(void);
+//void Sound_Lose(void);
+//void Sound_PowerUp(void);
 void Sound_Explosion(void);
-
-void Sound_Fastinvader1(void);
-void Sound_Fastinvader2(void);
-void Sound_Fastinvader3(void);
-void Sound_Fastinvader4(void);
-void Sound_Highpitch(void);
-
